@@ -10,10 +10,61 @@ const geocoder = require('../utils/geocoder');
  */
 
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  const bootcamps = await Bootcamps.find();
+  const { query: reqQuery } = req;
+  const { select, sort, page, limit } = reqQuery;
+
+  let query;
+  let selectFields;
+  let sortBy = '-createdAt';
+
+  const removeFields = ['select', 'sort', 'page', 'limit'];
+  removeFields.forEach(field => delete reqQuery[field]);
+
+  if (reqQuery) {
+    let queryStr = JSON.stringify(reqQuery);
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+    query = JSON.parse(queryStr);
+  }
+
+  if (select) {
+    selectFields = select.split(',').join(' ');
+  }
+
+  if (sort) {
+    sortBy = sort.split(',').join(' ');
+  }
+
+  // Pagination
+  const pageNumber = +page || 1;
+  const limitForPage = +limit || 10;
+  const startIndex = (pageNumber - 1) * limitForPage;
+  const endIndex = pageNumber * limitForPage;
+  const total = await Bootcamps.countDocuments();
+
+  const pagination = {};
+  if (endIndex < total) {
+    pagination.next = {
+      page: pageNumber + 1,
+      limit
+    };
+  }
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: pageNumber - 1,
+      limit
+    };
+  }
+
+  let bootcamps = await Bootcamps.find(query)
+    .select(selectFields)
+    .sort(sortBy)
+    .skip(startIndex)
+    .limit(limitForPage);
+
   res.status(200).send({
     success: true,
     count: bootcamps.length,
+    pagination,
     data: bootcamps
   });
 });
@@ -110,7 +161,7 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
 
   // Calc radius using radians
   // Divide dist by radius of Earth
-  // Earth Radius = 3.963 mi / 6.378 km
+  // Earth Radius = 3963 mi | 6378 km
   const radius = distance / 3963;
 
   const bootcamps = await Bootcamps.find({
