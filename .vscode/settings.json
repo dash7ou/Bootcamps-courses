@@ -4,6 +4,7 @@
         "bootcamps",
         "dsphere",
         "maxlength",
+        "slugify",
         "zipcode"
     ]
 }
