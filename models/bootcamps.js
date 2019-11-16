@@ -100,7 +100,7 @@ BootcampsSchema.pre('save', function(next) {
 BootcampsSchema.pre('save', async function(next) {
   const loc = await geocoder.geocode(this.address);
   const [
-    { longitude, latitude, formattedAddress, streetName, city, state, zipcode, country }
+    { longitude, latitude, formattedAddress, streetName, city, state, zipcode, countryCode }
   ] = loc;
   this.location = {
     type: 'Point',
@@ -110,7 +110,7 @@ BootcampsSchema.pre('save', async function(next) {
     city,
     state,
     zipcode,
-    country
+    country: countryCode
   };
 
   // Do not save address in DB

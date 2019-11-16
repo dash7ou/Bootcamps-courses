@@ -1,11 +1,12 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const Bootcamps = require('../models/bootcamps');
+const geocoder = require('../utils/geocoder');
 
 /**
  *   @desc    Get all bootcamps
  *   @route   GET /api/v1/bootcamps
- *   @access  public
+ *   @access  Private
  */
 
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
@@ -20,7 +21,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 /**
  *   @desc    Get single bootcamps
  *   @route   GET /api/v1/bootcamps/:id
- *   @access  public
+ *   @access  Private
  */
 exports.getBootcamp = asyncHandler(async (req, res, next) => {
   const {
@@ -40,7 +41,7 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
 /**
  *   @desc    create single bootcamps
  *   @route   POST /api/v1/bootcamps
- *   @access  private
+ *   @access  Private
  */
 exports.postBootcamp = asyncHandler(async (req, res, next) => {
   const bootcamp = await new Bootcamps({
@@ -53,7 +54,7 @@ exports.postBootcamp = asyncHandler(async (req, res, next) => {
 /**
  *   @desc    update single bootcamps
  *   @route   PUT /api/v1/bootcamps/:id
- *   @access  private
+ *   @access  Private
  */
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
   const {
@@ -75,7 +76,7 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 /**
  *   @desc    delete single bootcamps
  *   @route   DELETE /api/v1/bootcamps/:id
- *   @access  private
+ *   @access  Private
  */
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   const {
@@ -89,5 +90,36 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   res.send({
     message: 'delete bootcamps is done',
     data: null
+  });
+});
+
+/**
+ *   @desc    GET bootcamps within radius
+ *   @route   GET /api/v1/bootcamps/radius/:zipcode/:distance
+ *   @access  Private
+ */
+
+exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
+  const {
+    params: { zipcode, distance }
+  } = req;
+
+  // Get lat/lng from geocode
+  const loc = await geocoder.geocode(zipcode);
+  const [{ latitude: lat, longitude: lng }] = loc;
+
+  // Calc radius using radians
+  // Divide dist by radius of Earth
+  // Earth Radius = 3.963 mi / 6.378 km
+  const radius = distance / 3963;
+
+  const bootcamps = await Bootcamps.find({
+    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+  });
+
+  res.status(200).send({
+    success: true,
+    count: bootcamps.length,
+    data: bootcamps
   });
 });
