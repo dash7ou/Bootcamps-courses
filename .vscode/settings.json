@@ -5,6 +5,7 @@
         "dsphere",
         "maxlength",
         "slugify",
+        "virtuals",
         "zipcode"
     ]
 }

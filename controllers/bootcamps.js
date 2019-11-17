@@ -56,6 +56,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   }
 
   let bootcamps = await Bootcamps.find(query)
+    .populate('courses')
     .select(selectFields)
     .sort(sortBy)
     .skip(startIndex)
@@ -134,13 +135,15 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     params: { id }
   } = req;
 
-  const bootcamp = await Bootcamps.findByIdAndDelete({ _id: id });
+  const bootcamp = await Bootcamps.findById({ _id: id });
   if (!bootcamp) {
     return next(new ErrorResponse(`Bootcamp not found with id of ${id}`, 404));
   }
+
+  await bootcamp.remove();
   res.send({
     message: 'delete bootcamps is done',
-    data: null
+    data: {}
   });
 });
 
