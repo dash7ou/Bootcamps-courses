@@ -5,6 +5,7 @@
         "dsphere",
         "maxlength",
         "mimetype",
+        "minlength",
         "slugify",
         "virtuals",
         "zipcode"
