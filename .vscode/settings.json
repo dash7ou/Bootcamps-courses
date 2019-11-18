@@ -4,6 +4,7 @@
         "bootcamps",
         "dsphere",
         "maxlength",
+        "mimetype",
         "slugify",
         "virtuals",
         "zipcode"
