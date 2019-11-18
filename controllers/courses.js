@@ -43,8 +43,8 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
   } = req;
 
   const course = await Course.findById(id).populate({
-    path: 'bootcamp',
-    select: 'name description'
+    path: 'bootcamp'
+    // select: 'name description'
   });
 
   if (!course) return next(new ErrorResponse(`No course with the id of ${id}`), 404);
