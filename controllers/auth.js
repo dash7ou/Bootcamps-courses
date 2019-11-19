@@ -69,3 +69,17 @@ const sendTokenResponse = (user, statusCode, res) => {
       token
     });
 };
+
+/**
+ *   @desc    Get current logged in user
+ *   @route   POST /api/v1/auth/me
+ *   @access  Public
+ */
+
+exports.getMe = asyncHandler(async (req, res, next) => {
+  const { user } = req;
+  res.status(200).send({
+    success: true,
+    data: user
+  });
+});
