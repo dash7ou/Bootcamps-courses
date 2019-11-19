@@ -6,6 +6,7 @@ const errorHandler = require('./middleware/error');
 const connectDB = require('./config/db');
 const fileUpload = require('express-fileupload');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 // Load env vars
 dotEnv.config({
@@ -39,6 +40,9 @@ app.use(fileUpload());
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
 app.use('/api/v1/auth', auth);
+
+// Cookie parser
+app.use(cookieParser());
 
 app.use(errorHandler);
 
