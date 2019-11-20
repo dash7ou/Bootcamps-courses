@@ -69,16 +69,25 @@ exports.postBootcamp = asyncHandler(async (req, res, next) => {
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
   const {
     params: { id },
-    body: newData
+    body: newData,
+    user: { _id: ownerId, role }
   } = req;
 
-  const bootcamp = await Bootcamps.findByIdAndUpdate(id, newData, {
+  let bootcamp;
+
+  if (role !== 'admin') {
+    bootcamp = await Bootcamps.findOne({ user: ownerId });
+    if (!bootcamp)
+      return next(
+        new ErrorResponse(`user with id${ownerId} not have permission to edit that`, 401)
+      );
+  }
+
+  bootcamp = await Bootcamps.findByIdAndUpdate(id, newData, {
     new: true,
     runValidators: true
   });
-  if (!bootcamp) {
-    return next(new ErrorResponse(`Bootcamp not found with id of ${id}`, 404));
-  }
+  if (!bootcamp) return next(new ErrorResponse(`Bootcamp not found with id of ${id}`, 404));
 
   res.status(200).send({ success: true, data: bootcamp });
 });
@@ -90,15 +99,25 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
  */
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   const {
-    params: { id }
+    params: { id },
+    user: { _id: ownerId, role }
   } = req;
+  let bootcamp;
 
-  const bootcamp = await Bootcamps.findById({ _id: id });
+  bootcamp = await Bootcamps.findById({ _id: id });
   if (!bootcamp) {
     return next(new ErrorResponse(`Bootcamp not found with id of ${id}`, 404));
   }
+  if (role !== 'admin') {
+    bootcamp = await Bootcamps.findOne({ user: ownerId });
+    if (!bootcamp)
+      return next(
+        new ErrorResponse(`user with id${ownerId} not have permission to edit that`, 401)
+      );
+  }
 
   await bootcamp.remove();
+
   res.send({
     message: 'delete bootcamps is done',
     data: {}
@@ -149,11 +168,16 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
     files: { file },
     files: {
       file: { mimetype, size, name }
-    }
+    },
+    user: { role, _id: ownerId }
   } = req;
 
   const bootcamp = await Bootcamps.findById(id);
   if (!bootcamp) return next(new ErrorResponse(`no bootcamp with this id ${id}`, 404));
+
+  if (role !== 'admin' && bootcamp.user.toString() !== ownerId) {
+    return next(new ErrorResponse(`user with id${ownerId} not have permission to edit that`, 401));
+  }
 
   if (!files) return next(new ErrorResponse(`Please upload a file..`, 400));
 
