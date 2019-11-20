@@ -63,7 +63,8 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 exports.createCourse = asyncHandler(async (req, res, next) => {
   const {
     body,
-    params: { bootcampId }
+    params: { bootcampId },
+    user: { _id: ownerId, role }
   } = req;
 
   const bootcamp = await Bootcamp.findById(bootcampId);
@@ -71,7 +72,10 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
   if (!bootcamp) {
     return next(new ErrorResponse(`No bootcamp with the id of ${bootcampId}`, 404));
   }
-  const course = await Course.create({ ...body, bootcamp: bootcampId });
+  if (role !== 'admin' && +bootcamp.user !== +ownerId)
+    return next(new ErrorResponse(`You cant create course`, 401));
+
+  const course = await Course.create({ ...body, bootcamp: bootcampId, user: ownerId });
 
   res.status(201).send({
     success: true,
@@ -88,12 +92,16 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
 exports.updateCourse = asyncHandler(async (req, res, next) => {
   const {
     params: { id },
-    body
+    body,
+    user: { _id: owner, role }
   } = req;
 
   let course = await Course.findById(id);
   if (!course)
     return next(new ErrorResponse(`Can not update course because it not found ${id}`, 404));
+
+  if (role !== 'admin' && +course.user !== +owner)
+    return next(new ErrorResponse('You are not owner', 401));
 
   course = await Course.findByIdAndUpdate(id, body, {
     new: true,
@@ -114,12 +122,16 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
 
 exports.deleteCourse = asyncHandler(async (req, res, next) => {
   const {
-    params: { id }
+    params: { id },
+    user: { _id: owner, role }
   } = req;
 
   const course = await Course.findById(id);
   if (!course)
     return next(new ErrorResponse(`Can not delete course because it not found ${id}`, 404));
+
+  if (role !== 'admin' && +course.user !== +owner)
+    return next(new ErrorResponse('You are not owner', 401));
 
   await course.remove();
 
