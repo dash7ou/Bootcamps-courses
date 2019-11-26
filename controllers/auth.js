@@ -2,6 +2,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/User');
 const sendEmail = require("../utils/sendEmail");
+const crypto = require("crypto");
 
 /**
  *   @desc    Register User
@@ -79,32 +80,10 @@ exports.getMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, res) => {
-  const token = user.getSignedJwtToken();
-
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    option.secure = true;
-  }
-
-  res.status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token
-    });
-};
 
 /**
  *   @desc    Forgot Password
- *   @route   POST /api/v1/auth/forgetPassword
+ *   @route   POST /api/v1/auth/forgetpassword
  *   @access  Public
  */
 
@@ -127,7 +106,7 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   // Create reset url
-  const resetURL = `${req.protocol}://${req.get("host")}/api/v1/resetpassword/${resetToken}`;
+  const resetURL = `${req.protocol}://${req.get("host")}/api/v1/auth/resetpassword/${resetToken}`;
 
   const message = `You are receiving this email becouse you (or someone else) has requested the reset of a password. please make PUT request to :\n\n ${resetURL}`;
 
@@ -152,3 +131,68 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Email could not be send ", 500));
   }
 });
+
+
+
+
+/**
+ *   @desc    Reset Password
+ *   @route   PUT /api/v1/auth/resetpassword/:resettoken
+ *   @access  Public
+ */
+
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  const {
+    params: {
+      resettoken
+    },
+    body: {
+      password
+    }
+  } = req;
+
+  const resetPasswordToken = crypto.createHash("sha256").update(resettoken).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: {
+      $gt: Date.now()
+    }
+  });
+
+  if (!user) return next(new ErrorResponse("Invalid Token", 400));
+
+  // Set new Password
+  user.password = password;
+  user.resetPasswordExpire = undefined;
+  user.resetPasswordToken = undefined;
+
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});
+
+
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user, statusCode, res) => {
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    option.secure = true;
+  }
+
+  res.status(statusCode)
+    .cookie('token', token, options)
+    .json({
+      success: true,
+      token
+    });
+};
