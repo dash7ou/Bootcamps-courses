@@ -22,7 +22,7 @@ connectDB();
 const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
 const auth = require('./routes/auth');
-
+const user = require("./routes/user")
 //Body parser
 app.use(express.json());
 
@@ -40,6 +40,9 @@ app.use(fileUpload());
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/user', user);
+
+
 
 // Cookie parser
 app.use(cookieParser());
