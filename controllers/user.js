@@ -9,7 +9,7 @@ const User = require("../models/User");
  *   @access  Private/Admin
  */
 
-exports.getUsers = asyncHandler((req, res, next) => {
+exports.getUsers = asyncHandler(async (req, res, next) => {
     res.status(200).json(res.advanceResults);
 });
 
@@ -21,7 +21,7 @@ exports.getUsers = asyncHandler((req, res, next) => {
  *   @access  Private/Admin
  */
 
-exports.getUsers = asyncHandler((req, res, next) => {
+exports.getUsers = asyncHandler(async (req, res, next) => {
     const {
         params: {
             id
@@ -40,7 +40,7 @@ exports.getUsers = asyncHandler((req, res, next) => {
  *   @access  Private/Admin
  */
 
-exports.createUser = asyncHandler((req, res, next) => {
+exports.createUser = asyncHandler(async (req, res, next) => {
     const {
         body
     } = req;
@@ -53,4 +53,33 @@ exports.createUser = asyncHandler((req, res, next) => {
         success: true,
         dat: user
     })
+});
+
+
+/**
+ *   @desc    update user
+ *   @route   PUT /api/v1/auth/users/:id
+ *   @access  Private/Admin
+ */
+
+
+exports.updateUser = asyncHandler(async (req, res, next) => {
+    const {
+        body,
+        params: {
+            id
+        }
+    } = req;
+
+    const user = await User.findByIdAndUpdate(id, {
+        ...body
+    }, {
+        runValidators: true,
+        new: true
+    });
+
+    res.status(200).send({
+        success: true,
+        data: user
+    });
 });
