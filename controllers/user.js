@@ -83,3 +83,25 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
         data: user
     });
 });
+
+/**
+ *   @desc    delete user
+ *   @route   DELETE /api/v1/auth/users/:id
+ *   @access  Private/Admin
+ */
+
+
+exports.deleteUser = asyncHandler(async (req, res, next) => {
+    const {
+        params: {
+            id
+        }
+    } = req;
+
+    await User.findByIdAndRemove(id);
+
+    res.status(200).send({
+        success: true,
+        data: {}
+    })
+})
