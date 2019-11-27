@@ -7,7 +7,8 @@ const Review = require("../models/Review");
 
 const {
     getReviews,
-    getReview
+    getReview,
+    createReview
 } = require("../controllers/review");
 
 const advanceResults = require("../middleware/advanceResult");
@@ -23,5 +24,6 @@ router.route("/").get(advanceResults(Review, {
 }), getReviews)
 
 router.route("/:id").get(getReview);
+router.route("/").post(protect, authorize('user', 'admin'), createReview);
 
 module.exports = router;
