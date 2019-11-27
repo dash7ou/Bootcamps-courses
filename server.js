@@ -23,7 +23,7 @@ const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
 const auth = require('./routes/auth');
 const user = require("./routes/user")
-const Review = require("./models/Review");
+const Review = require("./routes/review");
 
 //Body parser
 app.use(express.json());

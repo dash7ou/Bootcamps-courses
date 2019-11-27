@@ -14,15 +14,21 @@ const {
 const Bootcamp = require('../models/bootcamps');
 const advanceResult = require('../middleware/advanceResult');
 
-const { protect, authorize } = require('../middleware/auth');
+const {
+  protect,
+  authorize
+} = require('../middleware/auth');
 
 // Include other resource routers
 const coursesRouter = require('./courses');
+const reviewRouter = require("./review")
 
 router.route('/radius/:zipcode/:distance').get(getBootcampsInRadius);
 
 // Re-route into other resource routers
 router.use('/:bootcampId/courses', coursesRouter);
+router.use('/:bootcampId/reviews', reviewRouter);
+
 
 router
   .route('/')

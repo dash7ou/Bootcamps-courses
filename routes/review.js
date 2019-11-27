@@ -20,3 +20,7 @@ router.route("/").get(advanceResults(Review, {
     path: "bootcamp",
     select: "name description"
 }), getReviews)
+
+
+
+module.exports = router;
