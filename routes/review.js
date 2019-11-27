@@ -6,7 +6,8 @@ const router = express.Router({
 const Review = require("../models/Review");
 
 const {
-    getReviews
+    getReviews,
+    getReview
 } = require("../controllers/review");
 
 const advanceResults = require("../middleware/advanceResult");
@@ -21,6 +22,6 @@ router.route("/").get(advanceResults(Review, {
     select: "name description"
 }), getReviews)
 
-
+router.route("/:id").get(getReview);
 
 module.exports = router;
