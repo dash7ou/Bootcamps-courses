@@ -21,7 +21,7 @@ exports.getUsers = asyncHandler(async (req, res, next) => {
  *   @access  Private/Admin
  */
 
-exports.getUsers = asyncHandler(async (req, res, next) => {
+exports.getUser = asyncHandler(async (req, res, next) => {
     const {
         params: {
             id
