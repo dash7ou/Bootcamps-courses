@@ -12,7 +12,12 @@ const crypto = require('crypto');
 
 exports.register = asyncHandler(async (req, res, next) => {
   const {
-    body: { name, email, password, role },
+    body: {
+      name,
+      email,
+      password,
+      role
+    },
   } = req;
 
   let user = await User.create({
@@ -38,7 +43,10 @@ exports.register = asyncHandler(async (req, res, next) => {
 
 exports.login = asyncHandler(async (req, res, next) => {
   const {
-    body: { email, password },
+    body: {
+      email,
+      password
+    },
   } = req;
 
   if (!email)
@@ -62,13 +70,32 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ *   @desc    Log out user / clear cookies
+ *   @route   GET /api/v1/auth/logout
+ *   @access  Private
+ */
+
+exports.logout = asyncHandler(async (req, res, next) => {
+  res.cookie('token', 'none', {
+    expires: new Date(Date.now + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).send({
+    success: true,
+    data: {}
+  })
+})
+
+/**
  *   @desc    Get current logged in user
  *   @route   POST /api/v1/auth/me
  *   @access  Private
  */
 
 exports.getMe = asyncHandler(async (req, res, next) => {
-  const { user } = req;
+  const {
+    user
+  } = req;
   res.status(200).send({
     success: true,
     data: user,
@@ -83,17 +110,20 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 
 exports.updateDetails = asyncHandler(async (req, res, next) => {
   const {
-    user: { id },
-    body: { email, name },
+    user: {
+      id
+    },
+    body: {
+      email,
+      name
+    },
   } = req;
 
   const user = await User.findByIdAndUpdate(
-    id,
-    {
+    id, {
       email,
       name,
-    },
-    {
+    }, {
       new: true,
       runValidators: true,
     },
@@ -113,8 +143,13 @@ exports.updateDetails = asyncHandler(async (req, res, next) => {
 
 exports.updatePassword = asyncHandler(async (req, res, next) => {
   const {
-    user: { id },
-    body: { currentPassword, newPassword },
+    user: {
+      id
+    },
+    body: {
+      currentPassword,
+      newPassword
+    },
   } = req;
 
   const user = await User.findById(id).select('password');
@@ -137,7 +172,9 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
 
 exports.forgetPassword = asyncHandler(async (req, res, next) => {
   const {
-    body: { email },
+    body: {
+      email
+    },
   } = req;
 
   const user = await User.findOne({
@@ -190,8 +227,12 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
 
 exports.resetPassword = asyncHandler(async (req, res, next) => {
   const {
-    params: { resettoken },
-    body: { password },
+    params: {
+      resettoken
+    },
+    body: {
+      password
+    },
   } = req;
 
   const resetPasswordToken = crypto
@@ -225,7 +266,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   const options = {
     expires: new Date(
       Date.now() +
-        process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
+      process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
   };

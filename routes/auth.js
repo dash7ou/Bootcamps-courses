@@ -8,7 +8,8 @@ const {
     forgetPassword,
     resetPassword,
     updateDetails,
-    updatePassword
+    updatePassword,
+    logout
 } = require('../controllers/auth');
 
 const {
@@ -17,6 +18,7 @@ const {
 
 router.route('/register').post(register);
 router.route('/login').post(login);
+router.route('/logout').get(protect, logout);
 router.route('/me').get(protect, getMe);
 router.route('/updatedetails').put(protect, updateDetails);
 router.route('/updatepassword').put(protect, updatePassword);
