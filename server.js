@@ -8,6 +8,7 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require("express-mongo-sanitize");
+const helmet = require("helmet");
 
 // Load env vars
 dotEnv.config({
@@ -41,6 +42,9 @@ app.use(fileUpload());
 
 // mongo senitize data
 app.use(mongoSanitize());
+
+// set secirty headers
+app.use(helmet());
 
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
