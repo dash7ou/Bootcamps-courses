@@ -11,6 +11,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
 
 // Load env vars
 dotEnv.config({
@@ -56,8 +57,10 @@ const limiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 100,
 });
-
 app.use(limiter);
+
+// Protect from http parameter attack
+app.use(hpp());
 
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
