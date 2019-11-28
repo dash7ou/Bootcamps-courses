@@ -11,7 +11,9 @@ const path = require('path');
  */
 
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  const { advanceResult } = res;
+  const {
+    advanceResult
+  } = res;
 
   res.status(200).send({
     ...advanceResult
@@ -25,7 +27,9 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
  */
 exports.getBootcamp = asyncHandler(async (req, res, next) => {
   const {
-    params: { id }
+    params: {
+      id
+    }
   } = req;
 
   const bootcamp = await Bootcamps.findById(id);
@@ -45,10 +49,15 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
  */
 exports.postBootcamp = asyncHandler(async (req, res, next) => {
   const {
-    user: { _id: id, role }
+    user: {
+      _id: id,
+      role
+    }
   } = req;
 
-  const bootcampPublished = await Bootcamps.findOne({ user: id });
+  const bootcampPublished = await Bootcamps.findOne({
+    user: id
+  });
 
   if (bootcampPublished && role !== 'admin')
     return next(new ErrorResponse(`The user with id ${id} has already published a bootcamp`, 400));
@@ -58,7 +67,10 @@ exports.postBootcamp = asyncHandler(async (req, res, next) => {
     user: id
   });
   await bootcamp.save();
-  res.status(201).send({ success: true, data: bootcamp });
+  res.status(201).send({
+    success: true,
+    data: bootcamp
+  });
 });
 
 /**
@@ -68,15 +80,22 @@ exports.postBootcamp = asyncHandler(async (req, res, next) => {
  */
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
   const {
-    params: { id },
+    params: {
+      id
+    },
     body: newData,
-    user: { _id: ownerId, role }
+    user: {
+      _id: ownerId,
+      role
+    }
   } = req;
 
   let bootcamp;
 
   if (role !== 'admin') {
-    bootcamp = await Bootcamps.findOne({ user: ownerId });
+    bootcamp = await Bootcamps.findOne({
+      user: ownerId
+    });
     if (!bootcamp)
       return next(
         new ErrorResponse(`user with id${ownerId} not have permission to edit that`, 401)
@@ -89,7 +108,10 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
   });
   if (!bootcamp) return next(new ErrorResponse(`Bootcamp not found with id of ${id}`, 404));
 
-  res.status(200).send({ success: true, data: bootcamp });
+  res.status(200).send({
+    success: true,
+    data: bootcamp
+  });
 });
 
 /**
@@ -99,17 +121,26 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
  */
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   const {
-    params: { id },
-    user: { _id: ownerId, role }
+    params: {
+      id
+    },
+    user: {
+      _id: ownerId,
+      role
+    }
   } = req;
   let bootcamp;
 
-  bootcamp = await Bootcamps.findById({ _id: id });
+  bootcamp = await Bootcamps.findById({
+    _id: id
+  });
   if (!bootcamp) {
     return next(new ErrorResponse(`Bootcamp not found with id of ${id}`, 404));
   }
   if (role !== 'admin') {
-    bootcamp = await Bootcamps.findOne({ user: ownerId });
+    bootcamp = await Bootcamps.findOne({
+      user: ownerId
+    });
     if (!bootcamp)
       return next(
         new ErrorResponse(`user with id${ownerId} not have permission to edit that`, 401)
@@ -132,12 +163,18 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
 
 exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
   const {
-    params: { zipcode, distance }
+    params: {
+      zipcode,
+      distance
+    }
   } = req;
 
   // Get lat/lng from geocode
   const loc = await geocoder.geocode(zipcode);
-  const [{ latitude: lat, longitude: lng }] = loc;
+  const [{
+    latitude: lat,
+    longitude: lng
+  }] = loc;
 
   // Calc radius using radians
   // Divide dist by radius of Earth
@@ -145,7 +182,13 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
   const radius = distance / 3963;
 
   const bootcamps = await Bootcamps.find({
-    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+    location: {
+      $geoWithin: {
+        $centerSphere: [
+          [lng, lat], radius
+        ]
+      }
+    }
   });
 
   res.status(200).send({
@@ -163,19 +206,30 @@ exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
 
 exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
   const {
-    params: { id },
-    files,
-    files: { file },
-    files: {
-      file: { mimetype, size, name }
+    params: {
+      id
     },
-    user: { role, _id: ownerId }
+    files,
+    files: {
+      file
+    },
+    files: {
+      file: {
+        mimetype,
+        size,
+        name
+      }
+    },
+    user: {
+      role,
+      _id: ownerId
+    }
   } = req;
 
   const bootcamp = await Bootcamps.findById(id);
   if (!bootcamp) return next(new ErrorResponse(`no bootcamp with this id ${id}`, 404));
 
-  if (role !== 'admin' && bootcamp.user.toString() !== ownerId) {
+  if (role !== 'admin' && bootcamp.user.toString() !== ownerId.toString()) {
     return next(new ErrorResponse(`user with id${ownerId} not have permission to edit that`, 401));
   }
 
@@ -198,7 +252,9 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse(`Problem in upload file`, 500));
     }
 
-    await Bootcamps.findByIdAndUpdate(id, { photo: file.name });
+    await Bootcamps.findByIdAndUpdate(id, {
+      photo: file.name
+    });
 
     res.status(200).send({
       success: true,

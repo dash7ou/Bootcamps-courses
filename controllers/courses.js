@@ -13,20 +13,28 @@ const Bootcamp = require('../models/bootcamps');
 exports.getCourses = asyncHandler(async (req, res, next) => {
   let courses;
   const {
-    params: { bootcampId }
+    params: {
+      bootcampId
+    }
   } = req;
 
-  const { advanceResult } = res;
+  const {
+    advanceResult
+  } = res;
 
   if (bootcampId) {
-    courses = await Course.find({ bootcamp: bootcampId });
+    courses = await Course.find({
+      bootcamp: bootcampId
+    });
     res.status(200).send({
       success: true,
       count: courses.length,
       data: courses
     });
   } else {
-    res.status(200).send({ ...advanceResult });
+    res.status(200).send({
+      ...advanceResult
+    });
   }
 });
 
@@ -38,7 +46,9 @@ exports.getCourses = asyncHandler(async (req, res, next) => {
 
 exports.getCourse = asyncHandler(async (req, res, next) => {
   const {
-    params: { id }
+    params: {
+      id
+    }
   } = req;
 
   const course = await Course.findById(id).populate({
@@ -63,8 +73,13 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 exports.createCourse = asyncHandler(async (req, res, next) => {
   const {
     body,
-    params: { bootcampId },
-    user: { _id: ownerId, role }
+    params: {
+      bootcampId
+    },
+    user: {
+      _id: ownerId,
+      role
+    }
   } = req;
 
   const bootcamp = await Bootcamp.findById(bootcampId);
@@ -72,10 +87,14 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
   if (!bootcamp) {
     return next(new ErrorResponse(`No bootcamp with the id of ${bootcampId}`, 404));
   }
-  if (role !== 'admin' && +bootcamp.user !== +ownerId)
+  if (role !== 'admin' && bootcamp.user.toString() !== ownerId.toString())
     return next(new ErrorResponse(`You cant create course`, 401));
 
-  const course = await Course.create({ ...body, bootcamp: bootcampId, user: ownerId });
+  const course = await Course.create({
+    ...body,
+    bootcamp: bootcampId,
+    user: ownerId
+  });
 
   res.status(201).send({
     success: true,
@@ -91,16 +110,21 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
 
 exports.updateCourse = asyncHandler(async (req, res, next) => {
   const {
-    params: { id },
+    params: {
+      id
+    },
     body,
-    user: { _id: owner, role }
+    user: {
+      _id: owner,
+      role
+    }
   } = req;
 
   let course = await Course.findById(id);
   if (!course)
     return next(new ErrorResponse(`Can not update course because it not found ${id}`, 404));
 
-  if (role !== 'admin' && +course.user !== +owner)
+  if (role !== 'admin' && course.user.toString() !== owner.toString())
     return next(new ErrorResponse('You are not owner', 401));
 
   course = await Course.findByIdAndUpdate(id, body, {
@@ -122,15 +146,20 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
 
 exports.deleteCourse = asyncHandler(async (req, res, next) => {
   const {
-    params: { id },
-    user: { _id: owner, role }
+    params: {
+      id
+    },
+    user: {
+      _id: owner,
+      role
+    }
   } = req;
 
   const course = await Course.findById(id);
   if (!course)
     return next(new ErrorResponse(`Can not delete course because it not found ${id}`, 404));
 
-  if (role !== 'admin' && +course.user !== +owner)
+  if (role !== 'admin' && course.user.toString() !== owner.toString())
     return next(new ErrorResponse('You are not owner', 401));
 
   await course.remove();

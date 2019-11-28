@@ -95,3 +95,48 @@ exports.createReview = asyncHandler(async (req, res, next) => {
         data: review
     });
 });
+
+/**
+ *   @desc    update a review
+ *   @route   PUT /api/v1/reviews/:id
+ *   @access  Private
+ */
+
+exports.updateReview = asyncHandler(async (req, res, next) => {
+    const {
+        params: {
+            id
+        },
+        user: {
+            _id: authorId,
+            role
+        },
+        body
+    } = req;
+
+    let review = await Review.findById(id);
+    if (!review) return next(new ErrorResponse("not found review", 404));
+
+    if (review.user.toString() !== authorId.toString()) {
+        return next(new ErrorResponse("You are not owner", 404));
+    }
+
+    review = await Review.findByIdAndUpdate(id, {
+        ...body
+    }, {
+        runValidators: true,
+        new: true
+    })
+    if (!review) return next(new ErrorResponse("there are problem ", 500))
+    res.status(200).send({
+        success: true,
+        data: review
+    });
+})
+
+
+/**
+ *   @desc    delete a review
+ *   @route   DELETE /api/v1/reviews/:id
+ *   @access  Private
+ */
