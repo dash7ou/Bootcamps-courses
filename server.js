@@ -7,12 +7,13 @@ const connectDB = require('./config/db');
 const fileUpload = require('express-fileupload');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const mongoSanitize = require("express-mongo-sanitize");
-const helmet = require("helmet");
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xss = require('xss-clean');
 
 // Load env vars
 dotEnv.config({
-  path: './config/dev.env'
+  path: './config/dev.env',
 });
 
 const app = express();
@@ -24,8 +25,8 @@ connectDB();
 const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
 const auth = require('./routes/auth');
-const user = require("./routes/user")
-const Review = require("./routes/review");
+const user = require('./routes/user');
+const Review = require('./routes/review');
 
 //Body parser
 app.use(express.json());
@@ -46,6 +47,9 @@ app.use(mongoSanitize());
 // set secirty headers
 app.use(helmet());
 
+// Prevent XSS attacks
+app.use(xss());
+
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
@@ -61,7 +65,10 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} on port ${PORT}`.yellow.bold);
+  console.log(
+    `Server running in ${process.env.NODE_ENV} on port ${PORT}`.yellow
+      .bold,
+  );
 });
 
 // Handle unhandled promise rejections
