@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 const fileUpload = require('express-fileupload');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const mongoSanitize = require("express-mongo-sanitize");
 
 // Load env vars
 dotEnv.config({
@@ -37,6 +38,9 @@ if (process.env.NODE_ENV === 'development') {
 
 // File upload
 app.use(fileUpload());
+
+// mongo senitize data
+app.use(mongoSanitize());
 
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
