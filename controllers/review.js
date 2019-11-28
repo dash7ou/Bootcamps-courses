@@ -140,3 +140,26 @@ exports.updateReview = asyncHandler(async (req, res, next) => {
  *   @route   DELETE /api/v1/reviews/:id
  *   @access  Private
  */
+
+exports.deleteReview = asyncHandler(async (req, res, next) => {
+    const {
+        params: {
+            id
+        },
+        user: {
+            _id: authorId
+        }
+    } = req;
+
+    const review = await Review.findById(id);
+    if (!review) return next(new ErrorResponse("no found review", 404));
+
+    if (review.user.toString() !== authorId.toString()) return next(new ErrorResponse("You are not owner", 400));
+
+    await review.remove()
+
+    res.status(200).send({
+        success: true,
+        data: {}
+    })
+})
