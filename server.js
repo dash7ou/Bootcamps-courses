@@ -12,6 +12,7 @@ const helmet = require('helmet');
 const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
+const cors = require('cors');
 
 // Load env vars
 dotEnv.config({
@@ -62,6 +63,9 @@ app.use(limiter);
 // Protect from http parameter attack
 app.use(hpp());
 
+// Enable CORS
+app.use(cors());
+
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
@@ -79,7 +83,7 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(
     `Server running in ${process.env.NODE_ENV} on port ${PORT}`.yellow
-      .bold,
+    .bold,
   );
 });
 
@@ -90,3 +94,22 @@ process.on('unhandledRejection', (err, promise) => {
   // close server
   server.close(() => process.exit(1));
 });
+/**
+ * 
+ * - Install the Homebrew dependencies if you have sudo access:
+  Debian, Ubuntu, etc.
+    sudo apt-get install build-essential
+  Fedora, Red Hat, CentOS, etc.
+    sudo yum groupinstall 'Development Tools'
+  See https://docs.brew.sh/linux for more information.
+- Configure Homebrew in your ~/.profile by running
+    echo 'eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)' >>~/.profile
+- Add Homebrew to your PATH
+    eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+- We recommend that you install GCC by running:
+    brew install gcc
+- Run `brew help` to get started
+- Further documentation: 
+    https://docs.brew.sh
+
+ */
